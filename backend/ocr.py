@@ -1,4 +1,6 @@
 import re
+from datetime import datetime
+
 
 def cleaning_data_geo_dipa_energi(df):
     def cleaning_profile(df):
@@ -192,12 +194,23 @@ def cleaning_data_geo_dipa_energi(df):
         df_cleaned = df.iloc[start_index + 1 : end_index].reset_index(drop=True)
         df_cleaned = df_cleaned.iloc[:, :9]
 
+        def convert_time(time_str):
+            if time_str == '24:00':
+                return 24.0
+            time_obj = datetime.strptime(time_str, "%H:%M")
+            return time_obj.hour + time_obj.minute / 60.0
+        
         result_list = []
         for i in range(len(df_cleaned)):
+            start_time = df_cleaned.iloc[i, 0]
+            end_time = df_cleaned.iloc[i, 1]
+            start_float = convert_time(start_time)
+            end_float = convert_time(end_time)
+
             result_list.append(
                 {
-                    "start": df_cleaned.iloc[i, 0],
-                    "end": df_cleaned.iloc[i, 1],
+                    "start": start_float,
+                    "end": end_float,
                     "elapsed": df_cleaned.iloc[i, 2],
                     "depth": df_cleaned.iloc[i, 3],
                     "pt_npt": df_cleaned.iloc[i, 5],

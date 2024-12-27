@@ -20,7 +20,7 @@ from ocr import cleaning_data_geo_dipa_energi
 from flask_cors import CORS
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = 'data/uploaded_files'
+app.config["UPLOAD_FOLDER"] = '/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/uploaded_files'
 app.config["SQLALCHEMY_DATABASE_URI"] = ('postgresql://postgres:7832@localhost:5433/OCR')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 CORS(app)

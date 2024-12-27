@@ -7,10 +7,10 @@ db = SQLAlchemy()
 class Profile(db.Model):
     __tablename__ = "profile"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True) 
     operator = db.Column(db.String(100))
     contractor = db.Column(db.String(100))
-    report_no = db.Column(db.String(50))
+    report_no = db.Column(db.Integer, unique=True, nullable=False) 
     well_pad_name = db.Column(db.String(100))
     field = db.Column(db.String(50))
     well_type_profile = db.Column(db.String(100))
@@ -18,6 +18,10 @@ class Profile(db.Model):
     environment = db.Column(db.String(50))
     gl_msl_m = db.Column(db.Float)
     unique_hash = db.Column(db.String(32), unique=True, nullable=False)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.id = kwargs.get("report_no") 
 
 # General Data Model
 class GeneralData(db.Model):
@@ -87,8 +91,8 @@ class TimeBreakdown(db.Model):
     __tablename__ = "time_breakdown"
 
     profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
-    start = db.Column(db.String(256), primary_key=True)
-    end = db.Column(db.String(256))
+    start = db.Column(db.Float, primary_key=True)
+    end = db.Column(db.Float)
     elapsed = db.Column(db.Float)
     depth = db.Column(db.Float)
     pt_npt = db.Column(db.String(256))
