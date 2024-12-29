@@ -3,7 +3,8 @@ import hashlib
 import camelot
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
-from sqlalchemy.inspection import inspect
+# from sqlalchemy.inspection import inspect
+from sqlalchemy.sql import text
 
 from database import (
     Profile,
@@ -141,6 +142,32 @@ def upload_pdf():
             return jsonify({"message": f"Failed to process the PDF: {str(e)}"}), 500
 
     return jsonify({"message": "Invalid file type, please upload a PDF file"}), 400
+
+@app.route('/time_breakdown', methods=['GET'])
+def get_time_breakdown():
+    """
+    Fetches all records from the time_breakdown table ordered by profile_id and start.
+    """
+    try:
+        # Execute the SQL query
+        query = text("""
+            SELECT * 
+            FROM time_breakdown
+            ORDER BY profile_id, start ASC;
+        """)
+        result = db.session.execute(query)
+
+        # Convert result to a list of dictionaries
+        time_breakdown = [
+            dict(row._mapping) for row in result
+        ]
+
+        return jsonify(time_breakdown), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == "__main__":
     with app.app_context():
