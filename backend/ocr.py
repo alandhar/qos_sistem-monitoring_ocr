@@ -1,36 +1,49 @@
 import re
 from datetime import datetime
 
-
 def cleaning_data_geo_dipa_energi(df):
     def cleaning_profile(df):
-        extracted_data = df.iloc[1:4, 0].values
+
+        extracted_data = df.iloc[:4, 0].values
 
         patterns = {
-            "operator": r"OPERATOR\s+(.*)\s+CONTRACTOR",
-            "contractor": r"CONTRACTOR\s+(.*)\s+REPORT NO",
-            "report_no": r"REPORT NO.\s+#\s*(\d+)",
-            "well_pad_name": r"WELL/\s*PAD NAME\s+(.*?)\s+FIELD",
-            "field": r"FIELD\s+(\w+)",
-            "well_type_profile": r"WELL\s*TYPE/\s*PROFILE\s+(.*?)\s+LATITUDE",
-            "latitude_longitude": r"LATITUDE/\s*LONGITUDE\s+(.*?)\s+GL",
-            "environment": r"ENVIRONTMENT\s+(\w+)",
-            "gl_msl_m": r"GL\s+-\s+MSL\s*\(M\)\s*(.*)",
+            'operator': r'OPERATOR\s+(.*)\s+CONTRACTOR',
+            'contractor': r'CONTRACTOR\s+(.*)\s+REPORT NO',
+            'report_no': r'REPORT NO.\s+#\s*(\d+)',
+            'well_pad_name': r'WELL/\s*PAD NAME\s+(.*?)\s+FIELD',
+            'field': r'FIELD\s+(\w+)',
+            'well_type_profile': r'WELL\s*TYPE/\s*PROFILE\s+(.*?)\s+LATITUDE',
+            'latitude_longitude': r'LATITUDE/\s*LONGITUDE\s+(.*?)\s+GL',
+            'environment': r'ENVIRONTMENT\s+(\w+)',
+            'gl_msl_m': r'GL\s+-\s+MSL\s*\(M\)\s*(.*)',  # Capture everything after GL - MSL (M)
         }
 
         profile_data = {}
 
+        date_pattern = r'\b\d{1,2}-[A-Za-z]{3}-\d{2,4}\b'
+        match = re.search(date_pattern, extracted_data[0], re.IGNORECASE)
+        if match:
+            raw_date = match.group()
+            try:
+                formatted_date = datetime.strptime(raw_date, '%d-%b-%y').strftime('%Y-%m-%d')
+                profile_data['date'] = formatted_date
+            except ValueError:
+                profile_data['date'] = None
+        else:
+            profile_data['date'] = None
+
+        # Extract data for other keys
         for key, pattern in patterns.items():
             for line in extracted_data:
                 match = re.search(pattern, line, re.IGNORECASE)
                 if match:
-                    profile_data[key] = match.group(1).strip()
+                    value = match.group(1).strip()
+                    if key == 'gl_msl_m':
+                        value = re.sub(r'[^\d.]+', '', value)
+                    profile_data[key] = value
                     break
-        if "gl_msl_m" in profile_data:
-            profile_data["gl_msl_m"] = re.sub(r"[^\d.]", "", profile_data["gl_msl_m"])
-            profile_data["gl_msl_m"] = (
-                float(profile_data["gl_msl_m"]) if profile_data["gl_msl_m"] else None
-            )
+            else:
+                profile_data[key] = None
 
         return profile_data
 

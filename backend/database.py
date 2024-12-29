@@ -8,6 +8,7 @@ class Profile(db.Model):
     __tablename__ = "profile"
 
     id = db.Column(db.Integer, primary_key=True) 
+    date = db.Column(db.Date, nullable=False)
     operator = db.Column(db.String(100))
     contractor = db.Column(db.String(100))
     report_no = db.Column(db.Integer, unique=True, nullable=False) 
