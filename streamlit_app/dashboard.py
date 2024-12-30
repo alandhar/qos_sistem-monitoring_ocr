@@ -1,27 +1,37 @@
 import streamlit as st
 import requests
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
 
 api_url_upload_data = "http://localhost:5000/upload" 
 file_path = '/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/processed_data/time_breakdown.csv'
-data_timebreakdown = pd.read_csv(file_path)
+df = pd.read_csv(file_path)
 
-data_timebreakdown['date'] = pd.to_datetime(data_timebreakdown['date'])
-start_date = data_timebreakdown['date'].min()
-end_date = data_timebreakdown['date'].max()
+df['date'] = pd.to_datetime(df['date'])
+df['timestamp'] = df['date'] + pd.to_timedelta(df['start'], unit='H')
 
 
-# Sidebar: File Upload and Filters
 st.sidebar.header("Filters")
 
-selected_start_date = st.sidebar.date_input("Start Date", start_date)
-selected_end_date = st.sidebar.date_input("End Date", end_date)
+# Select Time Frame 
 time_frame = st.sidebar.selectbox("Select Time Frame", ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly'])
+if time_frame == "Weekly":
+    df['time_frame'] = df['date'].dt.to_period('W').apply(lambda r: r.start_time)
+elif time_frame == "Monthly":
+    df['time_frame'] = df['date'].dt.to_period('M').apply(lambda r: r.start_time)
+else:
+    df['time_frame'] = df['date']
+
+# Select Date by Time Frame
+start_date = st.sidebar.date_input("Start Date", value=df['date'].min())
+end_date = st.sidebar.date_input("End Date", value=df['date'].max())
+date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+filtered_df = df[df['date'].isin(date_range)]
 
 additional_filter = st.sidebar.text_input("Additional Filter", placeholder="Optional")
-uploaded_file = st.sidebar.file_uploader("Upload Drilling Report", type="pdf")
 
+# Upload Report File Drilling
+uploaded_file = st.sidebar.file_uploader("Upload Drilling Report", type="pdf")
 if uploaded_file is not None :
     st.sidebar.write("File uploaded:", uploaded_file.name)
     files = {'file': (uploaded_file.name, uploaded_file, 'application/pdf')}
@@ -36,7 +46,26 @@ if uploaded_file is not None :
     except requests.exceptions.RequestException as e:
         st.sidebar.error(f"{str(e)}")
 
-# Title of the Streamlit app
-st.title("Drilling Monitoring Dashboard")
-# Main: Monitoring Data Visualization
-st.header("Monitoring Data Visualization")
+
+st.title("PT. GEO DIPA ENERGI (Persero)")
+st.header("Drilling Operations Dashboard")
+
+# Plot the time series chart with points
+fig = px.scatter(
+    filtered_df,
+    x="timestamp",
+    y="depth",
+    title="Drilling Depth Over Time (with Points)",
+    labels={"timestamp": "Timestamp", "depth": "Depth (m)"},
+    range_y=[0, max(filtered_df['depth'])]  # Ensure y-axis starts at 0
+)
+
+# Add line to connect points
+fig.add_scatter(
+    x=filtered_df['timestamp'],
+    y=filtered_df['depth'],
+    mode='lines',
+    name='Depth Trend'
+)
+
+st.plotly_chart(fig)
