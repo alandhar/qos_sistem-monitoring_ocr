@@ -1,71 +1,104 @@
 import streamlit as st
 import requests
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 
-api_url_upload_data = "http://localhost:5000/upload" 
-file_path = '/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/processed_data/time_breakdown.csv'
-df = pd.read_csv(file_path)
+# API Endpoint
+API_URL_UPLOAD = "http://localhost:5000/upload"
 
-df['date'] = pd.to_datetime(df['date'])
-df['timestamp'] = df['date'] + pd.to_timedelta(df['start'], unit='H')
+# Load Data
+FILE_PATH = '/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/processed_data/time_breakdown.csv'
+df = pd.read_csv(FILE_PATH)
 
+df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
+# Preprocess the Data
+def preprocess_data(df):
+    
+    # Generate complete date range
+    min_date = df['date'].min()
+    max_date = df['date'].max()
+    complete_dates = pd.date_range(start=min_date, end=max_date)
+
+    # Identify missing dates and append
+    missing_dates = complete_dates.difference(df['date'])
+    missing_data = pd.DataFrame({'date': missing_dates})
+    
+    # Assign default values for missing data
+    for col in df.columns:
+        if col == 'start':
+            missing_data[col] = 0  # Default start value for missing rows
+        elif col == 'end':
+            missing_data[col] = 0  # Default end value for missing rows
+        elif col != 'date':
+            missing_data[col] = None  # None for other columns
+
+    # Combine original and missing data
+    df = pd.concat([df, missing_data], ignore_index=True)
+
+    # Ensure 'start' and 'end' columns exist and are numeric
+    df['start'] = pd.to_numeric(df.get('start', 0), errors='coerce').fillna(0)
+    df['end'] = pd.to_numeric(df.get('end', 0), errors='coerce').fillna(0)
+
+    # Calculate 'start_time' and 'end_time'
+    df['start_time'] = df['date'] + pd.to_timedelta(df['start'], unit='h')
+    df['end_time'] = df['date'] + pd.to_timedelta(df['end'], unit='h')
+
+    # Sort data by 'start_time'
+    df = df.sort_values(by='start_time').reset_index(drop=True)
+    return df
+
+# Sidebar Filters
 st.sidebar.header("Filters")
-
-# Select Time Frame 
 time_frame = st.sidebar.selectbox("Select Time Frame", ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly'])
-if time_frame == "Weekly":
-    df['time_frame'] = df['date'].dt.to_period('W').apply(lambda r: r.start_time)
-elif time_frame == "Monthly":
-    df['time_frame'] = df['date'].dt.to_period('M').apply(lambda r: r.start_time)
-else:
-    df['time_frame'] = df['date']
-
-# Select Date by Time Frame
 start_date = st.sidebar.date_input("Start Date", value=df['date'].min())
 end_date = st.sidebar.date_input("End Date", value=df['date'].max())
-date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-filtered_df = df[df['date'].isin(date_range)]
+filtered_df = df[(df['date'] >= pd.to_datetime(start_date)) & (df['date'] <= pd.to_datetime(end_date))]
+# Optional Additional Filter
+additional_filter = st.sidebar.text_input("Additional Filter (Optional)")
 
-additional_filter = st.sidebar.text_input("Additional Filter", placeholder="Optional")
-
-# Upload Report File Drilling
-uploaded_file = st.sidebar.file_uploader("Upload Drilling Report", type="pdf")
-if uploaded_file is not None :
-    st.sidebar.write("File uploaded:", uploaded_file.name)
-    files = {'file': (uploaded_file.name, uploaded_file, 'application/pdf')}
+# Upload Drilling Report
+uploaded_file = st.sidebar.file_uploader("Upload Drilling Report (PDF)", type="pdf")
+if uploaded_file:
     try:
-        response = requests.post(url=api_url_upload_data, files=files)
-
+        files = {'file': (uploaded_file.name, uploaded_file, 'application/pdf')}
+        response = requests.post(url=API_URL_UPLOAD, files=files)
         if response.status_code == 201:
-            st.sidebar.success("Data uploaded successfully!")
+            st.sidebar.success("File uploaded successfully!")
         else:
-            error_message = response.json().get('message', 'Unknown error')
-            st.sidebar.error(f"{error_message}")
+            st.sidebar.error(response.json().get('message', "Failed to upload file"))
     except requests.exceptions.RequestException as e:
-        st.sidebar.error(f"{str(e)}")
+        st.sidebar.error(f"Upload error: {str(e)}")
 
-
+# Dashboard Title
 st.title("PT. GEO DIPA ENERGI (Persero)")
 st.header("Drilling Operations Dashboard")
 
-# Plot the time series chart with points
-fig = px.scatter(
-    filtered_df,
-    x="timestamp",
-    y="depth",
-    title="Drilling Depth Over Time (with Points)",
-    labels={"timestamp": "Timestamp", "depth": "Depth (m)"},
-    range_y=[0, max(filtered_df['depth'])]  # Ensure y-axis starts at 0
-)
+# Visualization
+def visual(filter_option, df):
+    df = preprocess_data(df)
 
-# Add line to connect points
-fig.add_scatter(
-    x=filtered_df['timestamp'],
-    y=filtered_df['depth'],
-    mode='lines',
-    name='Depth Trend'
-)
+    if filter_option == 'Daily':
+        x_axis = df['start_time']
+    else:
+        x_axis = df['date']
 
-st.plotly_chart(fig)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=x_axis,
+        y=df['depth'],
+        mode='lines+markers' if filter_option == 'Daily' else 'lines',
+        name=f'{filter_option} Visualization',
+    ))
+
+    fig.update_layout(
+        title=f"Drilling Monitoring - {filter_option}",
+        xaxis_title="Time",
+        yaxis_title="Depth",
+        legend_title="Legend"
+    )
+
+    st.plotly_chart(fig)
+
+# Render Visualization
+visual(time_frame, filtered_df)
