@@ -7,7 +7,7 @@ db = SQLAlchemy()
 class Profile(db.Model):
     __tablename__ = "profile"
 
-    id = db.Column(db.Integer, primary_key=True) 
+    id = db.Column(db.String(150), primary_key=True) 
     date = db.Column(db.Date, nullable=False)
     operator = db.Column(db.String(100))
     contractor = db.Column(db.String(100))
@@ -22,13 +22,13 @@ class Profile(db.Model):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.id = kwargs.get("report_no") 
+        self.id = f"{kwargs.get('report_no')}_{kwargs.get('well_pad_name')}"
 
 # General Data Model
 class GeneralData(db.Model):
     __tablename__ = "general_data"
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
+    profile_id = db.Column(db.String(150), db.ForeignKey("profile.id"), primary_key=True)
     rig_type_name = db.Column(db.String(255))
     rig_power = db.Column(db.String(255))
     kb_elevation = db.Column(db.String(255))
@@ -44,7 +44,7 @@ class GeneralData(db.Model):
 class DrillingParameter(db.Model):
     __tablename__ = "drilling_parameters"
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
+    profile_id = db.Column(db.String(150), db.ForeignKey("profile.id"), primary_key=True)
     average_wob_24_hrs = db.Column(db.String(255))
     average_rop_24_hrs = db.Column(db.String(255))
     average_surface_rpm_dhm = db.Column(db.String(255))
@@ -60,7 +60,7 @@ class DrillingParameter(db.Model):
 class AFE(db.Model):
     __tablename__ = "afe"
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
+    profile_id = db.Column(db.String(150), db.ForeignKey("profile.id"), primary_key=True)
     afe_number_afe_cost = db.Column(db.String(256))
     daily_cost = db.Column(db.String(256))
     percent_afe_cumulative_cost = db.Column(db.String(256))
@@ -71,7 +71,7 @@ class AFE(db.Model):
 class PersonnelInCharge(db.Model):
     __tablename__ = "personnel_in_charge"
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
+    profile_id = db.Column(db.String(150), db.ForeignKey("profile.id"), primary_key=True)
     day_night_drilling_supv = db.Column(db.String(256))
     drilling_superintendent = db.Column(db.String(256))
     rig_superintendent = db.Column(db.String(256))
@@ -82,7 +82,7 @@ class PersonnelInCharge(db.Model):
 class Summary(db.Model):
     __tablename__ = "summary"
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
+    profile_id = db.Column(db.String(150), db.ForeignKey("profile.id"), primary_key=True)
     hours_24_summary = db.Column(db.Text)
     hours_24_forecast = db.Column(db.Text)
     status = db.Column(db.Text)
@@ -91,7 +91,7 @@ class Summary(db.Model):
 class TimeBreakdown(db.Model):
     __tablename__ = "time_breakdown"
 
-    profile_id = db.Column(db.Integer, db.ForeignKey("profile.id"), primary_key=True)
+    profile_id = db.Column(db.String(150), db.ForeignKey("profile.id"), primary_key=True)
     start = db.Column(db.Float, primary_key=True)
     end = db.Column(db.Float)
     elapsed = db.Column(db.Float)
