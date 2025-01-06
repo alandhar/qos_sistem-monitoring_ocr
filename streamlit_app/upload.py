@@ -24,13 +24,13 @@ def app():
                     filename = result.get("filename", "Unknown File")
                     message = result.get("message", "No message provided")
                     if "successfully" in message.lower():
-                        st.sidebar.success(f"{message}")
+                        st.success(f"{message}")
                     else:
-                        st.sidebar.error(f"{message}")
+                        st.error(f"{message}")
             else:
-                st.sidebar.error(
+                st.error(
                     response.json().get("message", "Failed to upload files")
                 )
 
         except requests.exceptions.RequestException as e:
-            st.sidebar.error(f"Upload error: {str(e)}")
+            st.error(f"Upload error: {str(e)}")
