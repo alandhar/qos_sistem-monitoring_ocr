@@ -174,7 +174,46 @@ def get_time_breakdown():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/detail', methods=['GET'])
+def get_detail_report():
+    try:
+        # Query 1: Fetch data from profile and related tables
+        detail_query = """
+            SELECT 
+                pf.id, 
+                pf.date, 
+                pf.contractor, 
+                pf.report_no, 
+                pf.field, 
+                pf.latitude_longitude,
+                afe.afe_number_afe_cost, 
+                afe.daily_cost, 
+                afe.daily_mud_cost, 
+                afe.cumulative_mud_cost,
+                pic.day_night_drilling_supv, 
+                pic.drilling_superintendent, 
+                pic.rig_superintendent, 
+                pic.drilling_engineer, 
+                pic.hse_supervisor,
+                smr.hours_24_summary
+            FROM profile pf
+            INNER JOIN afe ON afe.profile_id = pf.id
+            INNER JOIN personnel_in_charge pic ON pic.profile_id = pf.id
+            INNER JOIN summary smr ON smr.profile_id = pf.id;
+        """
+        detail_result = db.session.execute(text(detail_query))
+        detail = [dict(row._mapping) for row in detail_result]  
 
+        # Query 2: Fetch data from time_breakdown table
+        time_query = "SELECT * FROM time_breakdown;"
+        time_result = db.session.execute(text(time_query))
+        time = [dict(row._mapping) for row in time_result] 
+
+        # Combine the results into a single response
+        return jsonify({"detail": detail, "time": time}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     with app.app_context():
