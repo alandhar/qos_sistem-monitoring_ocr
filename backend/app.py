@@ -154,7 +154,8 @@ def get_time_breakdown():
                 tb.start, 
                 tb.end, 
                 tb.elapsed, 
-                tb.depth, 
+                tb.depth,
+                tb.description, 
                 pf.date, 
                 pf.well_pad_name
             FROM time_breakdown tb
@@ -180,14 +181,14 @@ def get_detail_report():
         # Query 1: Fetch data from profile and related tables
         detail_query = """
             SELECT 
-                pf.id, 
-                pf.date, 
+                pf.id,  
                 pf.contractor, 
                 pf.report_no, 
                 pf.field, 
                 pf.latitude_longitude,
                 afe.afe_number_afe_cost, 
-                afe.daily_cost, 
+                afe.daily_cost,
+                afe.percent_afe_cumulative_cost, 
                 afe.daily_mud_cost, 
                 afe.cumulative_mud_cost,
                 pic.day_night_drilling_supv, 
