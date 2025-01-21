@@ -1,5 +1,5 @@
 import streamlit as st
-import requests, html
+import requests
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -314,7 +314,7 @@ def visualize_by_drilling_progress_type(df, drilling_progress_type):
             )
             weekly_data['depth_difference'] = weekly_data['depth_difference'].fillna(0)
             weekly_data['label'] = weekly_data['depth_difference'].apply(
-                lambda x: "No difference" if x == 0 else int(x)
+                lambda x: "No Progress" if x == 0 else int(x)
             )
 
             fig = go.Figure()
@@ -353,7 +353,7 @@ def app():
         <style>
             /* Sidebar container background */
             [data-testid=stSidebar] {
-                background-color: #ffa500;
+                background-color: #e56717;
             }
 
             /* Simplified widget styles */
@@ -366,27 +366,13 @@ def app():
                 border: 2px solid #ffc594;
                 border-radius: 5px; /* Consistent rounded corners */
             }
-            [role="option"]:hover {
+            [role="option"]:hover, [aria-selected="true"]{
                 background-color: #ffcc00;
             }
-                
-            [aria-selected="true"]{
-                background-color: #ffcc00
-            }
+
             /* Change filter dropdown background when selected */
             [data-baseweb="select"] > div {
                 background-color: #ffc594; /* Light orange background for dropdown */
-            }
-                
-            /* Change filter background on focus/click */
-            [data-baseweb="input"]:focus,
-            [data-baseweb="base-input"]:focus,
-            [data-baseweb="select"]:focus,
-            [data-testid=stFileUploaderDropzone][tabindex="0"]:focus,
-            [class="st-an st-ao st-ap st-aq st-ak st-ar st-am st-as st-at st-au st-av st-aw st-ax st-ay st-az st-b0 st-b1 st-b2 st-b3 st-b4 st-b5 st-b6 st-b7 st-b8 st-b9 st-ba st-bb st-bc"]:focus{
-                background-color: #ffcc99; /* Light orange background when focused */
-                outline: none; /* Remove default outline */
-                border: 2px solid #ffa500; /* Highlight border color */
             }
             
             /* Button styles */

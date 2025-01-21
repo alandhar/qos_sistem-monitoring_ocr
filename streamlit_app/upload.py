@@ -5,10 +5,28 @@ API_URL = "http://localhost:5000"
 URL_UPLOAD = f"{API_URL}/upload"
 
 def app():
-    st.title("Upload Upload Drilling Reports (PDFs)")
+    st.markdown("""
+        <style>
+            /* Simplified widget styles */
+            [data-testid=stFileUploaderDropzone][tabindex="0"]{
+                background-color: #ffc594;
+                border: 2px solid #ffc594;
+                border-radius: 5px; /* Consistent rounded corners */
+            }
+            
+            /* Button styles */
+            [data-testid="stFileUploaderDropzone"] button {
+                background-color: #ffcc00; /* Yellow background */
+                border: 1px solid #ffa500; /* Border color */
+                border-radius: 5px; /* Rounded corners */
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
-    uploaded_files = st.file_uploader(
-    "Upload Drilling Reports (PDFs)", type="pdf", accept_multiple_files=True)
+
+    st.title("Upload Drilling Reports")
+
+    uploaded_files = st.file_uploader("Choose files", type="pdf", accept_multiple_files=True)
 
     if uploaded_files:
         try:

@@ -101,13 +101,6 @@ class TimeBreakdown(db.Model):
     description = db.Column(db.Text)
     operation = db.Column(db.Text)
 
-# Helper Function for JSON Serialization
-def serialize_model(model):
-    """
-    Dynamically serialize a SQLAlchemy model instance into a dictionary.
-    """
-    return {column.key: getattr(model, column.key) for column in model.__table__.columns}
-
 # Database Initialization Function
 def init_db(app):
     """

@@ -14,7 +14,6 @@ from database import (
     PersonnelInCharge,
     Summary,
     TimeBreakdown,
-    serialize_model,
     db,
 )
 from ocr import cleaning_data_geo_dipa_energi
