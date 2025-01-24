@@ -1,7 +1,7 @@
 import re, pandas as pd
 from datetime import datetime
 
-def cleaning_data_geo_dipa_energi(df):
+def cleaning_drilling_report_1(df):
     def cleaning_profile(df):
 
         extracted_data = df.iloc[:4, 0].values

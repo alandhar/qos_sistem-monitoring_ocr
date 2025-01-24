@@ -1,9 +1,12 @@
+import os
 import streamlit as st
 import requests
 import pandas as pd
 import plotly.graph_objects as go
+from dotenv import load_dotenv
+load_dotenv()
 
-API_URL = "http://localhost:5000"
+API_URL = os.getenv("API_URL")
 
 def fetch_data(url):
     """Fetch data from the API endpoint."""
@@ -234,9 +237,7 @@ def visualize_detail_report(detail, time, filtered_data):
                 st.dataframe(
                     filtered_time,
                     use_container_width=True,
-                    #height=700,
                     hide_index=True,
-                    # key="data",
                     on_select="rerun",
                     selection_mode=["multi-column"],
                 )
@@ -391,9 +392,6 @@ def app():
 
     # Fetch and preprocess data
     df = fetch_data(URL_TIMEBREAKDOWN)
-
-    logo = "/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/1630641987061.jpeg"
-    st.logo(logo, size="large", icon_image=logo)
 
     # Apply filters
     filtered_data, drilling_progress_type = apply_filters(df)

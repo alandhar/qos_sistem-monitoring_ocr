@@ -1,7 +1,10 @@
+import os
 import streamlit as st
 import requests
+from dotenv import load_dotenv
+load_dotenv()
 
-API_URL = "http://localhost:5000"
+API_URL = os.getenv("API_URL")
 URL_UPLOAD = f"{API_URL}/upload"
 
 def app():

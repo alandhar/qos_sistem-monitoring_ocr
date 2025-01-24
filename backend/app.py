@@ -3,8 +3,8 @@ import hashlib
 import camelot
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
-# from sqlalchemy.inspection import inspect
 from sqlalchemy.sql import text
+from dotenv import load_dotenv
 
 from database import (
     Profile,
@@ -16,12 +16,14 @@ from database import (
     TimeBreakdown,
     db,
 )
-from ocr import cleaning_data_geo_dipa_energi
+
+from ocr import cleaning_drilling_report_1
 from flask_cors import CORS
+load_dotenv()
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = '/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/uploaded_files'
-app.config["SQLALCHEMY_DATABASE_URI"] = ('postgresql://postgres:7832@localhost:5433/OCR')
+app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "./data/uploaded_files")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 CORS(app)
 
@@ -73,7 +75,7 @@ def upload_pdfs():
                     personnel_in_charge,
                     summary,
                     time_breakdown,
-                ) = cleaning_data_geo_dipa_energi(tables[0].df)
+                ) = cleaning_drilling_report_1(tables[0].df)
 
                 time_breakdown = {i: entry for i, entry in enumerate(time_breakdown)}
 

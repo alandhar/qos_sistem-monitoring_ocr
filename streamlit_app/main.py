@@ -1,12 +1,18 @@
+import os
 import streamlit as st
 import requests
 from upload import app as upload_app
 from dashboard import app as dashboard_app
+from dotenv import load_dotenv
+load_dotenv()
 
-API_URL = "http://localhost:5000"
+API_URL = os.getenv("API_URL")
 URL_TIMEBREAKDOWN = f"{API_URL}/time_breakdown"
 
 st.set_page_config(page_title="Multi-Page App", layout="wide")
+
+logo = "/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/1630641987061.jpeg"
+st.logo(logo, size="large", icon_image=logo)
 
 # Check if there is data in the database
 try:
