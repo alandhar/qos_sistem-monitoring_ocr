@@ -90,10 +90,18 @@ def apply_filters(df):
     st.sidebar.header("Filters")
     drilling_progress_type = st.sidebar.selectbox("Select Drilling Progress Type", ["Detailed Progress", "Daily Overview"])
     unique_well_pad_names = df['well_pad_name'].unique() if 'well_pad_name' in df.columns else []
-    selected_well_pad_name = st.sidebar.selectbox(
+
+    alphabet_labels = [chr(65 + i) for i in range(len(unique_well_pad_names))]  # 65 is ASCII for 'A'
+    well_pad_mapping = {name: label for name, label in zip(unique_well_pad_names, alphabet_labels)}
+
+    # Display the mapped labels in the sidebar
+    selected_label = st.sidebar.selectbox(
         "Select Well Pad Name",
-        options=unique_well_pad_names if len(unique_well_pad_names) > 0 else ["No data available"]
+        options=alphabet_labels if len(alphabet_labels) > 0 else ["No data available"]
     )
+
+    # Reverse the mapping to get the actual well_pad_name from the selected label
+    selected_well_pad_name = {v: k for k, v in well_pad_mapping.items()}.get(selected_label)
 
     if not df.empty and selected_well_pad_name != "No data available":
         filtered_data = df[df['well_pad_name'] == selected_well_pad_name]
@@ -174,6 +182,19 @@ def visualize_detail_report(detail, time, filtered_data):
                 # Extract the first row of the filtered_detail as a dictionary
                 detail = filtered_detail[0]
                 detail = {key: value if value is not None else "-" for key, value in detail.items()}
+
+                # Fungsi untuk menyembunyikan data kecuali huruf pertama
+                def mask_sensitive_data(value):
+                    if value == '-':  
+                        return value
+                    elif isinstance(value, str):  
+                        return value[0] + '*' * (len(value) - 1)
+                    elif isinstance(value, int): 
+                        return '*'
+                    else:  
+                        return value
+                
+                detail = {key: mask_sensitive_data(value) for key, value in detail.items()}
 
                 col1, col2 = st.columns(2)
 
