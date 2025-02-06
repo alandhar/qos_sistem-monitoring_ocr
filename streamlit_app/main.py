@@ -32,3 +32,6 @@ if has_data:
     dashboard_app()  # Render the dashboard if data exists
 else:
     upload_app()
+
+if __name__ == "__main__":
+    os.system("streamlit run Multi-Page App.py --server.port 5000")
