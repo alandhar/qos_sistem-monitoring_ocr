@@ -34,4 +34,4 @@ else:
     upload_app()
 
 if __name__ == "__main__":
-    os.system("streamlit run Multi-Page App.py --server.port 5000")
+    os.system("streamlit run main.py --server.port 5000")
