@@ -11,7 +11,7 @@ URL_TIMEBREAKDOWN = f"{API_URL}/time_breakdown"
 
 st.set_page_config(page_title="Multi-Page App", layout="wide")
 
-logo = "/Users/macbook/Documents/Mahasiswa/Proyek Akhir/final_project/data/1630641987061.jpeg"
+logo = os.getenv("LOGO")
 st.logo(logo, size="large", icon_image=logo)
 
 # Check if there is data in the database
